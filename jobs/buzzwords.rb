@@ -1,0 +1,27 @@
+require 'net/http'
+require 'uri'
+require 'json'
+
+
+buzzwords = ['Paradigm shift', 'Leverage', 'Pivoting', 'Turn-key', 'Streamlininess', 'Exit strategy', 'Synergy', 'Enterprise', 'Web 2.0'] 
+buzzword_counts = Hash.new({ value: 0 })
+
+SCHEDULER.every '2s' do
+  random_buzzword = buzzwords.sample
+  buzzword_counts[random_buzzword] = { label:'kk', value:'sssss' }
+  url = URI.parse("https://newsapi.org/v1/articles?source=the-next-web&sortBy=latest&apiKey=e88ea2be9a744019822c8ea944e9173b")
+  http = Net::HTTP.new(url.host, url.port)
+  http.use_ssl = (url.scheme == 'https')
+  http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  response = http.request(Net::HTTP::Get.new(url.request_uri))
+
+  # Convert to JSON
+  j = JSON.parse(response.body)
+
+  # Send the joke to the text widget
+  review_content = {}
+  review_content['en'] = { label: 'English', value: j["articles"][1]["description"] }
+  review_content['mi'] = { label: 'M', value: j["articles"][2]["description"] }
+  print review_content.values 
+  send_event('buzzwords', { items: review_content.values })
+end
